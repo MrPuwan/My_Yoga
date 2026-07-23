@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum PainArea {
+  NONE
+  NECK
+  BACK
+  SHOULDER
+  HIP
+  KNEE
+}
+
+model User {
+  id            String         @id @default(uuid())
+  fullName      String
+  email         String         @unique
+  passwordHash  String
+  role          Role           @default(USER)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  healthProfile HealthProfile?
+
+  @@map("users")
+}
+
+model HealthProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  age               Int
+  gender            String
+  height            Float
+  weight            Float
+  bmi               Float
+  bmiCategory       String
+  painArea          String
+  activityLevel     String?
+  medicalConditions String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("health_profiles")
+}
+
+model YogaPose {
+  id                String     @id @default(uuid())
+  name              String     @unique
+  description       String
+  instructions      String[]
+  benefits          String[]
+  precautions       String[]
+  difficulty        Difficulty
+  imageUrl          String?
+  durationSeconds   Int?
+  targetAreas       String[]
+  suitablePainAreas PainArea[]
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@map("yoga_poses")
+}
