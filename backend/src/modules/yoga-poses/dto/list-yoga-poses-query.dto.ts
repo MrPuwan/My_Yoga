@@ -1,4 +1,4 @@
-import { Difficulty, PainArea } from '@prisma/client';
+import { Difficulty } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
@@ -29,8 +29,8 @@ export class ListYogaPosesQueryDto {
   difficulty?: Difficulty;
 
   @IsOptional()
-  @IsEnum(PainArea)
-  painArea?: PainArea;
+  @IsString()
+  painArea?: string;
 
   @IsOptional()
   @Transform(({ value }) => {

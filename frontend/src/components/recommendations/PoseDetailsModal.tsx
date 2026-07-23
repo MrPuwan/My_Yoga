@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { YogaPose } from '../../types/yoga-pose';
+import { formatPainArea } from '../../utils/format-pain-area';
 
 interface PoseDetailsModalProps {
   pose: YogaPose;
@@ -130,11 +131,6 @@ function TagSection({
       </div>
     </section>
   );
-}
-
-function formatPainArea(value: string) {
-  if (value === 'NONE') return 'General wellness';
-  return formatLabel(value);
 }
 
 function formatLabel(value: string) {

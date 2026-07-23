@@ -6,16 +6,25 @@ import {
 } from '../../../services/yoga-poses.service';
 import {
   DIFFICULTIES,
-  PAIN_AREAS,
   type Difficulty,
   type PainArea,
   type YogaPose,
 } from '../../../types/yoga-pose';
 import { getApiErrorMessage } from '../../../utils/api-error';
+import { usePainAreas } from '../../../hooks/usePainAreas';
+import { createPainArea } from '../../../services/pain-areas.service';
+import { formatPainArea } from '../../../utils/format-pain-area';
 
 const PAGE_SIZE = 10;
 
 export default function YogaPoseListPage() {
+  const {
+    painAreas,
+    names: painAreaNames,
+    loading: painAreasLoading,
+    error: painAreasLoadError,
+    reload: reloadPainAreas,
+  } = usePainAreas();
   const [poses, setPoses] = useState<YogaPose[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -27,6 +36,9 @@ export default function YogaPoseListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
+  const [newPainArea, setNewPainArea] = useState('');
+  const [addingPainArea, setAddingPainArea] = useState(false);
+  const [painAreaError, setPainAreaError] = useState('');
 
   const loadPoses = useCallback(async () => {
     setLoading(true);
@@ -74,6 +86,28 @@ export default function YogaPoseListPage() {
     }
   };
 
+  const addPainArea = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPainAreaError('');
+    if (!newPainArea.trim()) {
+      setPainAreaError('Enter a pain area name.');
+      return;
+    }
+
+    setAddingPainArea(true);
+    try {
+      await createPainArea(newPainArea);
+      setNewPainArea('');
+      await reloadPainAreas();
+    } catch (requestError) {
+      setPainAreaError(
+        getApiErrorMessage(requestError, 'Unable to add this pain area.'),
+      );
+    } finally {
+      setAddingPainArea(false);
+    }
+  };
+
   return (
     <section className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -90,6 +124,62 @@ export default function YogaPoseListPage() {
           Add New Pose
         </Link>
       </div>
+
+      <section className="rounded-xl border border-[#d8decb] bg-[#fbfaf4] p-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="home-display text-xl font-medium text-[#1f2a24]">
+              Pain Area Options
+            </h2>
+            <p className="mt-1 text-sm text-[#5b6b5e]">
+              New options become available in health profiles and yoga-pose
+              forms immediately.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {painAreas.map((item) => (
+                <span
+                  key={item.id}
+                  className="rounded-full bg-[#eaeee3] px-3 py-1 text-xs font-medium text-[#5b6b5e]"
+                >
+                  {formatPainArea(item.name)}
+                </span>
+              ))}
+              {painAreasLoading && (
+                <span className="text-sm text-slate-500">Loading...</span>
+              )}
+            </div>
+          </div>
+
+          <form
+            onSubmit={addPainArea}
+            className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md"
+          >
+            <label className="sr-only" htmlFor="new-pain-area">
+              New pain area
+            </label>
+            <input
+              id="new-pain-area"
+              value={newPainArea}
+              onChange={(event) => setNewPainArea(event.target.value)}
+              placeholder="e.g. Lower back"
+              maxLength={50}
+              className="min-w-0 flex-1 rounded-xl border border-[#cbd3c1] bg-white px-4 py-2.5 outline-none focus:border-[#8aa07e]"
+            />
+            <button
+              type="submit"
+              disabled={addingPainArea}
+              className="rounded-xl bg-[#233329] px-5 py-2.5 font-semibold text-white disabled:opacity-60"
+            >
+              {addingPainArea ? 'Adding...' : 'Add Pain Area'}
+            </button>
+          </form>
+        </div>
+        {(painAreaError || painAreasLoadError) && (
+          <p role="alert" className="mt-3 text-sm text-red-600">
+            {painAreaError || painAreasLoadError}
+          </p>
+        )}
+      </section>
 
       <div className="rounded-lg bg-white p-4 shadow-sm">
         <form onSubmit={applySearch} className="grid gap-3 md:grid-cols-4">
@@ -121,7 +211,7 @@ export default function YogaPoseListPage() {
             className="rounded-md border border-slate-300 bg-white px-3 py-2"
           >
             <option value="">All pain areas</option>
-            {PAIN_AREAS.map((item) => (
+            {painAreaNames.map((item) => (
               <option key={item} value={item}>{item}</option>
             ))}
           </select>

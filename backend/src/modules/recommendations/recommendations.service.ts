@@ -1,11 +1,9 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
   Difficulty,
-  PainArea,
   type HealthProfile,
   type YogaPose,
 } from '@prisma/client';
@@ -26,13 +24,13 @@ export class RecommendationsService {
       );
     }
 
-    const painArea = this.getPainArea(profile.painArea);
+    const painArea = profile.painArea;
     const activity = this.getActivityLevel(profile.activityLevel);
     const isObese = profile.bmiCategory.toLowerCase() === 'obese';
     const allowedDifficulties = this.getAllowedDifficulties(
       activity,
       isObese,
-      painArea === PainArea.NONE,
+      painArea === GENERAL_WELLNESS,
     );
 
     const poses = await this.prisma.yogaPose.findMany({
@@ -41,9 +39,9 @@ export class RecommendationsService {
         difficulty: { in: allowedDifficulties },
         suitablePainAreas: {
           hasSome:
-            painArea === PainArea.NONE
-              ? [PainArea.NONE]
-              : [painArea, PainArea.NONE],
+            painArea === GENERAL_WELLNESS
+              ? [GENERAL_WELLNESS]
+              : [painArea, GENERAL_WELLNESS],
         },
       },
     });
@@ -54,7 +52,7 @@ export class RecommendationsService {
           pose.isActive &&
           allowedDifficulties.includes(pose.difficulty) &&
           (pose.suitablePainAreas.includes(painArea) ||
-            pose.suitablePainAreas.includes(PainArea.NONE)),
+            pose.suitablePainAreas.includes(GENERAL_WELLNESS)),
       )
       .map((pose) => this.rankPose(pose, profile, painArea, activity))
       .sort((first, second) => second.matchScore - first.matchScore)
@@ -64,7 +62,7 @@ export class RecommendationsService {
   private rankPose(
     pose: YogaPose,
     profile: HealthProfile,
-    painArea: PainArea,
+    painArea: string,
     activity: ActivityLevel,
   ) {
     let matchScore = 0;
@@ -74,11 +72,11 @@ export class RecommendationsService {
     if (exactMatch) {
       matchScore += 100;
       reasons.push(
-        painArea === PainArea.NONE
+        painArea === GENERAL_WELLNESS
           ? 'Supports general wellness'
           : `Matches your ${painArea.toLowerCase()} pain area`,
       );
-    } else if (pose.suitablePainAreas.includes(PainArea.NONE)) {
+    } else if (pose.suitablePainAreas.includes(GENERAL_WELLNESS)) {
       matchScore += 40;
       reasons.push('Suitable as a general wellness pose');
     }
@@ -157,14 +155,7 @@ export class RecommendationsService {
     return 'LOW';
   }
 
-  private getPainArea(value: string): PainArea {
-    if (Object.values(PainArea).includes(value as PainArea)) {
-      return value as PainArea;
-    }
-    throw new BadRequestException(
-      `Health profile contains an unsupported pain area: ${value}`,
-    );
-  }
 }
 
 type ActivityLevel = 'LOW' | 'MEDIUM' | 'HIGH';
+const GENERAL_WELLNESS = 'NONE';

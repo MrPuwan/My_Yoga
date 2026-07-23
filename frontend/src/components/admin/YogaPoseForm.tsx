@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import {
   DIFFICULTIES,
-  PAIN_AREAS,
   type PainArea,
   type YogaPosePayload,
 } from '../../types/yoga-pose';
 import DynamicStringFields from './DynamicStringFields';
 import YogaPoseImageField from './YogaPoseImageField';
+import { usePainAreas } from '../../hooks/usePainAreas';
 
 interface YogaPoseFormProps {
   initialValues?: YogaPosePayload;
@@ -40,6 +40,11 @@ export default function YogaPoseForm({
   submitting,
   onSubmit,
 }: YogaPoseFormProps) {
+  const {
+    names: painAreas,
+    loading: painAreasLoading,
+    error: painAreasError,
+  } = usePainAreas();
   const [values, setValues] = useState<YogaPosePayload>(initialValues);
   const [validationError, setValidationError] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
@@ -121,9 +126,9 @@ export default function YogaPoseForm({
 
   return (
     <form onSubmit={submit} className="space-y-6">
-      {(validationError || error) && (
+      {(validationError || error || painAreasError) && (
         <div role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-          {validationError || error}
+          {validationError || error || painAreasError}
         </div>
       )}
 
@@ -222,7 +227,7 @@ export default function YogaPoseForm({
           Suitable pain areas
         </legend>
         <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {PAIN_AREAS.map((painArea) => (
+          {painAreas.map((painArea) => (
             <label
               key={painArea}
               className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700"
@@ -236,6 +241,11 @@ export default function YogaPoseForm({
               {painArea}
             </label>
           ))}
+          {painAreasLoading && (
+            <p className="col-span-full text-sm text-slate-500">
+              Loading pain areas...
+            </p>
+          )}
         </div>
       </fieldset>
 
@@ -253,7 +263,7 @@ export default function YogaPoseForm({
 
       <button
         type="submit"
-        disabled={submitting || imageUploading}
+        disabled={submitting || imageUploading || painAreasLoading || Boolean(painAreasError)}
         className="rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {imageUploading

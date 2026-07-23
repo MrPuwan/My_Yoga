@@ -7,6 +7,7 @@ import { getMyRecommendations } from '../../services/recommendations.service';
 import type { Recommendation } from '../../types/recommendation';
 import type { YogaPose } from '../../types/yoga-pose';
 import { getApiErrorMessage } from '../../utils/api-error';
+import { formatPainArea } from '../../utils/format-pain-area';
 
 type PageState = 'loading' | 'success' | 'missing-profile' | 'error';
 
@@ -323,9 +324,4 @@ function RecommendationSkeleton() {
 
 function formatLabel(value: string) {
   return value.charAt(0) + value.slice(1).toLowerCase();
-}
-
-function formatPainArea(value: string) {
-  if (value === 'NONE') return 'General wellness';
-  return formatLabel(value);
 }

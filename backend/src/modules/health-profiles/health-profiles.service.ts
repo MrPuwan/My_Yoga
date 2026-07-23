@@ -2,12 +2,17 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateHealthProfileDto } from './dto/create-health-profile.dto';
 import { UpdateHealthProfileDto } from './dto/update-health-profile.dto';
+import { PainAreasService } from '../pain-areas/pain-areas.service';
 
 @Injectable()
 export class HealthProfilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly painAreasService: PainAreasService,
+  ) {}
 
   async create(userId: string, dto: CreateHealthProfileDto) {
+    await this.painAreasService.ensureValid([dto.painArea]);
     const existingProfile = await this.prisma.healthProfile.findUnique({
       where: { userId },
     });
@@ -42,6 +47,9 @@ export class HealthProfilesService {
 
   async update(userId: string, dto: UpdateHealthProfileDto) {
     const profile = await this.findByUserId(userId);
+    if (dto.painArea) {
+      await this.painAreasService.ensureValid([dto.painArea]);
+    }
     const height = dto.height ?? profile.height;
     const weight = dto.weight ?? profile.weight;
     const bmi = this.calculateBmi(height, weight);

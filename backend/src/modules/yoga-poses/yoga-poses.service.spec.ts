@@ -3,6 +3,7 @@ import { Difficulty } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../prisma/prisma.service';
 import { YogaPosesService } from './yoga-poses.service';
+import { PainAreasService } from '../pain-areas/pain-areas.service';
 
 describe('YogaPosesService', () => {
   let service: YogaPosesService;
@@ -22,6 +23,10 @@ describe('YogaPosesService', () => {
       providers: [
         YogaPosesService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: PainAreasService,
+          useValue: { ensureValid: jest.fn() },
+        },
       ],
     }).compile();
 

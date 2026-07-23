@@ -1,15 +1,7 @@
 export const DIFFICULTIES = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
-export const PAIN_AREAS = [
-  'NONE',
-  'NECK',
-  'BACK',
-  'SHOULDER',
-  'HIP',
-  'KNEE',
-] as const;
-export type PainArea = (typeof PAIN_AREAS)[number];
+export type PainArea = string;
 
 export interface YogaPose {
   id: string;

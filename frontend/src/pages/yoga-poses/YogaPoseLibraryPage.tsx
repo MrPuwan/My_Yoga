@@ -4,16 +4,22 @@ import PoseDetailsModal from '../../components/recommendations/PoseDetailsModal'
 import { getYogaPoses } from '../../services/yoga-poses.service';
 import {
   DIFFICULTIES,
-  PAIN_AREAS,
   type Difficulty,
   type PainArea,
   type YogaPose,
 } from '../../types/yoga-pose';
 import { getApiErrorMessage } from '../../utils/api-error';
+import { usePainAreas } from '../../hooks/usePainAreas';
+import { formatPainArea } from '../../utils/format-pain-area';
 
 const PAGE_SIZE = 9;
 
 export default function YogaPoseLibraryPage() {
+  const {
+    names: painAreas,
+    loading: painAreasLoading,
+    error: painAreasError,
+  } = usePainAreas();
   const [poses, setPoses] = useState<YogaPose[]>([]);
   const [selectedPose, setSelectedPose] = useState<YogaPose | null>(null);
   const [page, setPage] = useState(1);
@@ -135,7 +141,7 @@ export default function YogaPoseLibraryPage() {
               className="rounded-xl border border-[#cbd3c1] bg-white px-4 py-3 text-[#1f2a24]"
             >
               <option value="">All pain areas</option>
-              {PAIN_AREAS.map((item) => (
+              {painAreas.map((item) => (
                 <option key={item} value={item}>
                   {formatPainArea(item)}
                 </option>
@@ -144,6 +150,7 @@ export default function YogaPoseLibraryPage() {
 
             <button
               type="submit"
+              disabled={painAreasLoading}
               className="rounded-xl bg-[#233329] px-6 py-3 font-semibold text-white hover:bg-[#1a261f]"
             >
               Search
@@ -167,12 +174,14 @@ export default function YogaPoseLibraryPage() {
           </p>
         </div>
 
-        {error ? (
+        {(error || painAreasError) ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
             <h2 className="home-display text-2xl font-medium text-red-900">
               Pose library unavailable
             </h2>
-            <p className="mt-2 text-sm text-red-700">{error}</p>
+            <p className="mt-2 text-sm text-red-700">
+              {error || painAreasError}
+            </p>
             <button
               type="button"
               onClick={() => void loadPoses()}
@@ -325,9 +334,4 @@ function PoseGridSkeleton() {
 
 function formatLabel(value: string) {
   return value.charAt(0) + value.slice(1).toLowerCase();
-}
-
-function formatPainArea(value: string) {
-  if (value === 'NONE') return 'General wellness';
-  return formatLabel(value);
 }

@@ -1,7 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import {
   Difficulty,
-  PainArea,
   type HealthProfile,
   type YogaPose,
 } from '@prisma/client';
@@ -27,7 +26,7 @@ describe('RecommendationsService', () => {
     weight: 60,
     bmi: 22.04,
     bmiCategory: 'Normal',
-    painArea: PainArea.BACK,
+    painArea: 'BACK',
     activityLevel: 'Moderately active',
     medicalConditions: null,
     createdAt: new Date(),
@@ -46,7 +45,7 @@ describe('RecommendationsService', () => {
     imageUrl: null,
     durationSeconds: 60,
     targetAreas: ['Back'],
-    suitablePainAreas: [PainArea.BACK],
+    suitablePainAreas: ['BACK'],
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -76,8 +75,8 @@ describe('RecommendationsService', () => {
   it('scores an exact pain-area match above a general pose', async () => {
     prisma.healthProfile.findUnique.mockResolvedValue(profile());
     prisma.yogaPose.findMany.mockResolvedValue([
-      pose({ id: 'general', suitablePainAreas: [PainArea.NONE] }),
-      pose({ id: 'exact', suitablePainAreas: [PainArea.BACK] }),
+      pose({ id: 'general', suitablePainAreas: ['NONE'] }),
+      pose({ id: 'exact', suitablePainAreas: ['BACK'] }),
     ]);
 
     const result = await service.getForUser('user-1');
@@ -89,16 +88,16 @@ describe('RecommendationsService', () => {
 
   it('returns beginner general-wellness poses for NONE pain area', async () => {
     prisma.healthProfile.findUnique.mockResolvedValue(
-      profile({ painArea: PainArea.NONE, activityLevel: 'Very active' }),
+      profile({ painArea: 'NONE', activityLevel: 'Very active' }),
     );
     prisma.yogaPose.findMany.mockResolvedValue([
-      pose({ id: 'beginner', suitablePainAreas: [PainArea.NONE] }),
+      pose({ id: 'beginner', suitablePainAreas: ['NONE'] }),
       pose({
         id: 'advanced',
         difficulty: Difficulty.ADVANCED,
-        suitablePainAreas: [PainArea.NONE],
+        suitablePainAreas: ['NONE'],
       }),
-      pose({ id: 'specific', suitablePainAreas: [PainArea.BACK] }),
+      pose({ id: 'specific', suitablePainAreas: ['BACK'] }),
     ]);
 
     const result = await service.getForUser('user-1');
@@ -161,10 +160,10 @@ describe('RecommendationsService', () => {
       ...Array.from({ length: 10 }, (_, index) =>
         pose({
           id: `general-${index}`,
-          suitablePainAreas: [PainArea.NONE],
+          suitablePainAreas: ['NONE'],
         }),
       ),
-      pose({ id: 'exact', suitablePainAreas: [PainArea.BACK] }),
+      pose({ id: 'exact', suitablePainAreas: ['BACK'] }),
     ]);
 
     const result = await service.getForUser('user-1');

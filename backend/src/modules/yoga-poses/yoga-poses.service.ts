@@ -8,12 +8,17 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateYogaPoseDto } from './dto/create-yoga-pose.dto';
 import { UpdateYogaPoseDto } from './dto/update-yoga-pose.dto';
 import { ListYogaPosesQueryDto } from './dto/list-yoga-poses-query.dto';
+import { PainAreasService } from '../pain-areas/pain-areas.service';
 
 @Injectable()
 export class YogaPosesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly painAreasService: PainAreasService,
+  ) {}
 
   async create(dto: CreateYogaPoseDto) {
+    await this.painAreasService.ensureValid(dto.suitablePainAreas);
     await this.ensureNameIsUnique(dto.name);
 
     try {
@@ -72,6 +77,9 @@ export class YogaPosesService {
   async update(id: string, dto: UpdateYogaPoseDto) {
     await this.findOne(id);
 
+    if (dto.suitablePainAreas) {
+      await this.painAreasService.ensureValid(dto.suitablePainAreas);
+    }
     if (dto.name) {
       await this.ensureNameIsUnique(dto.name, id);
     }

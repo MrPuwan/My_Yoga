@@ -1,4 +1,4 @@
-import { Difficulty, PainArea } from '@prisma/client';
+import { Difficulty } from '@prisma/client';
 import {
   ArrayMinSize,
   IsArray,
@@ -62,6 +62,7 @@ export class CreateYogaPoseDto {
   targetAreas: string[];
 
   @IsArray()
-  @IsEnum(PainArea, { each: true })
-  suitablePainAreas: PainArea[];
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  suitablePainAreas: string[];
 }

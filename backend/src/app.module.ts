@@ -9,6 +9,7 @@ import { HealthProfilesModule } from './modules/health-profiles/health-profiles.
 import { YogaPosesModule } from './modules/yoga-poses/yoga-poses.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
+import { PainAreasModule } from './modules/pain-areas/pain-areas.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
     YogaPosesModule,
     RecommendationsModule,
     UploadsModule,
+    PainAreasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

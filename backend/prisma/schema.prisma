@@ -21,15 +21,6 @@ enum Difficulty {
   ADVANCED
 }
 
-enum PainArea {
-  NONE
-  NECK
-  BACK
-  SHOULDER
-  HIP
-  KNEE
-}
-
 model User {
   id            String         @id @default(uuid())
   fullName      String
@@ -74,10 +65,19 @@ model YogaPose {
   imageUrl          String?
   durationSeconds   Int?
   targetAreas       String[]
-  suitablePainAreas PainArea[]
+  suitablePainAreas String[]
   isActive          Boolean    @default(true)
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
   @@map("yoga_poses")
+}
+
+model PainArea {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("pain_areas")
 }

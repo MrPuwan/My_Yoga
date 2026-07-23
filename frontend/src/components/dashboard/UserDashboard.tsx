@@ -7,6 +7,7 @@ import { getMyRecommendations } from '../../services/recommendations.service';
 import type { HealthProfile } from '../../types/health-profile';
 import type { Recommendation } from '../../types/recommendation';
 import { getApiErrorMessage } from '../../utils/api-error';
+import { formatPainArea } from '../../utils/format-pain-area';
 
 type DashboardState = 'loading' | 'ready' | 'missing-profile' | 'error';
 
@@ -92,7 +93,7 @@ export default function UserDashboard() {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <ProfileMetric label="BMI" value={String(profile.bmi)} featured />
         <ProfileMetric label="BMI category" value={profile.bmiCategory} />
-        <ProfileMetric label="Pain area" value={formatValue(profile.painArea)} />
+        <ProfileMetric label="Pain area" value={formatPainArea(profile.painArea)} />
         <ProfileMetric
           label="Activity level"
           value={profile.activityLevel || 'Not specified'}
@@ -393,11 +394,6 @@ function StatusCard({
       </button>
     </div>
   );
-}
-
-function formatValue(value: string) {
-  if (value === 'NONE') return 'No specific pain';
-  return value.charAt(0) + value.slice(1).toLowerCase();
 }
 
 function formatDate(value: string) {

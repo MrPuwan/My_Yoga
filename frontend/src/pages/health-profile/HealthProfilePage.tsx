@@ -8,8 +8,10 @@ import type {
   HealthProfile,
   HealthProfilePayload,
 } from '../../types/health-profile';
-import { PAIN_AREAS, type PainArea } from '../../types/yoga-pose';
+import type { PainArea } from '../../types/yoga-pose';
 import { getApiErrorMessage } from '../../utils/api-error';
+import { usePainAreas } from '../../hooks/usePainAreas';
+import { formatPainArea } from '../../utils/format-pain-area';
 
 interface FormValues {
   age: string;
@@ -35,6 +37,11 @@ const inputClass =
   'mt-2 w-full rounded-xl border border-[#cbd3c1] bg-white px-4 py-3 text-[#1f2a24] outline-none transition placeholder:text-[#9aa597] focus:border-[#8aa07e] focus:ring-4 focus:ring-[#8aa07e]/15';
 
 export default function HealthProfilePage() {
+  const {
+    names: painAreas,
+    loading: painAreasLoading,
+    error: painAreasError,
+  } = usePainAreas();
   const [profile, setProfile] = useState<HealthProfile | null>(null);
   const [form, setForm] = useState<FormValues>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -100,7 +107,7 @@ export default function HealthProfilePage() {
       setError('Gender is required.');
       return;
     }
-    if (!form.painArea || !PAIN_AREAS.includes(form.painArea)) {
+    if (!form.painArea || !painAreas.includes(form.painArea)) {
       setError('Select a valid pain area.');
       return;
     }
@@ -132,7 +139,7 @@ export default function HealthProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || painAreasLoading) {
     return (
       <div className="-m-4 min-h-[calc(100vh-4rem)] bg-[#eaeee3] px-4 py-10 sm:-m-6 sm:px-6">
         <div className="mx-auto max-w-6xl animate-pulse space-y-6">
@@ -237,6 +244,14 @@ export default function HealthProfilePage() {
                   <span>{error}</span>
                 </div>
               )}
+              {painAreasError && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                  {painAreasError}
+                </div>
+              )}
               {success && (
                 <div
                   role="status"
@@ -331,7 +346,7 @@ export default function HealthProfilePage() {
               className={inputClass}
             >
               <option value="">Select pain area</option>
-              {PAIN_AREAS.map((painArea) => (
+              {painAreas.map((painArea) => (
                 <option key={painArea} value={painArea}>
                   {formatPainArea(painArea)}
                 </option>
@@ -442,9 +457,4 @@ function InfoItem({ text }: { text: string }) {
       {text}
     </li>
   );
-}
-
-function formatPainArea(painArea: PainArea) {
-  if (painArea === 'NONE') return 'No specific pain';
-  return painArea.charAt(0) + painArea.slice(1).toLowerCase();
 }
