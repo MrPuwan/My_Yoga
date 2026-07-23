@@ -14,11 +14,20 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: allowedOrigins,
+    credentials: true,
   });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
+
+  console.log(`🚀 Server running on port ${port}`);
 }
+
 bootstrap();
